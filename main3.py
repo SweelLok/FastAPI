@@ -33,7 +33,7 @@ async def create_table():
 		conn.close()
 
 
-app = FastAPI(on_startup=(create_table))
+app = FastAPI(on_startup=(create_table,))
 
 
 @app.get("/todo/")

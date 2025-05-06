@@ -1,11 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import aiohttp
 import aiomysql
 import os
 
-
 app = FastAPI()
-
 
 URL = "https://jsonplaceholder.typicode.com/users"
 MYSQL_CONNECTION_DATA = {
@@ -15,6 +13,10 @@ MYSQL_CONNECTION_DATA = {
     "password": os.environ.get("MYSQL_PASSWORD"),
     "db": os.environ.get("MYSQL_DB"),
 }
+
+
+async def get_connection():
+    return await aiomysql.connect(**MYSQL_CONNECTION_DATA)
 
 
 @app.get("/api_users/")
@@ -27,61 +29,60 @@ async def get_users_api():
 
 @app.get("/db_users/")
 async def get_users_db():
-	conn = await aiomysql.connect(**MYSQL_CONNECTION_DATA)
-
-	try:
-		async with conn.cursor() as cursor:
-			await cursor.execute("SELECT * FROM users")
-			result = await cursor.fetchall()
-			if not result:
-				return {"error": "No users found"}            
-			
-	except Exception as e:
-		return {"error": str(e)}
-	finally:
-		conn.close()
-
-	return result
+    conn = await get_connection()
+    try:
+        async with conn.cursor() as cursor:
+            await cursor.execute("SELECT * FROM users")
+            result = await cursor.fetchall()
+            if not result:
+                raise HTTPException(status_code=404, detail="No users found.")
+            return result
+    except aiomysql.Error as e:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    finally:
+        conn.close()
 
 
 @app.post("/add_user/")
 async def add_user_to_db(user: str, email: str):
-	conn = await aiomysql.connect(**MYSQL_CONNECTION_DATA)
+    if not user or not email:
+        raise HTTPException(status_code=400, detail="User and email are required.")
 
-	if not user or not email:
-		return {"error": "User and email are required"}
-	
-	try:
-		async with conn.cursor() as cursor:
-			await cursor.execute(
-				"INSERT INTO users (name, email) VALUES (%s, %s)",
-				(user, email)
-			)
-			await conn.commit()
-	except Exception as e:
-		return {"error": str(e)}
-	finally:
-		conn.close()
-
-	return {"status": "User added successfully"}
+    conn = await get_connection()
+    try:
+        async with conn.cursor() as cursor:
+            await cursor.execute(
+                "INSERT INTO users (name, email) VALUES (%s, %s)",
+                (user, email)
+            )
+            await conn.commit()
+            return {"status": "User added successfully"}
+    except aiomysql.Error as e:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    finally:
+        conn.close()
 
 
 @app.post("/delete_user/{user_id}/")
 async def delete_user(user_id: int):
-	conn = await aiomysql.connect(**MYSQL_CONNECTION_DATA)
+    conn = await get_connection()
+    try:
+        async with conn.cursor() as cursor:
+            await cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+            user = await cursor.fetchone()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found.")
 
-	try:
-		async with conn.cursor() as cursor:
-			await cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-			user = await cursor.fetchone()
-			
-			if not user:
-				return {"error": "User not found"}
-			
-			await cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-			await conn.commit()
-			return {"status": "User deleted successfully"}
-	except Exception as e:
-		return {"error": str(e)}
-	finally:
-		conn.close()
+            await cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            await conn.commit()
+            return {"status": "User deleted successfully"}
+    except aiomysql.Error as e:
+        raise HTTPException(status_code=500, detail=f"MySQL error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+    finally:
+        conn.close()
