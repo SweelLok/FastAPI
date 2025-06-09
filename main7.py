@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field, EmailStr
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 app = FastAPI()
@@ -11,13 +11,13 @@ class Order(BaseModel):
     product_name: str = Field(..., min_length=1)
     quantity: int = Field(default=1, gt=0)
     price_per_unit: float = Field(..., gt=0)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class User(BaseModel):
     name: str
     email: EmailStr
-    orders: List[Order] = []
+    orders: List[Order] = Field(default_factory=list)
 
 
 db = {}

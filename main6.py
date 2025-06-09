@@ -1,26 +1,23 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List
 from datetime import datetime
 
-
 app = FastAPI()
 
-
 movies_db = []
-
 
 class Movie(BaseModel):
     id: int
     title: str
     director: str
-    release_year: int = Field(..., example=2024)
+    release_year: int = Field(..., examples=[2024])
     rating: float = Field(..., ge=0, le=10)
 
-    @validator('release_year')
+    @field_validator("release_year")
+    @classmethod
     def year_check(cls, val):
-        now = datetime.now().year
-        if val > now:
+        if val > datetime.now().year:
             raise ValueError("Рік випуску не може бути у майбутньому")
         return val
 
@@ -28,10 +25,11 @@ class Movie(BaseModel):
 class MovieCreate(BaseModel):
     title: str
     director: str
-    release_year: int = Field(..., example=2023)
+    release_year: int = Field(..., examples=[2023])
     rating: float = Field(..., ge=0, le=10)
 
-    @validator('release_year')
+    @field_validator("release_year")
+    @classmethod
     def no_future_year(cls, v):
         if v > datetime.now().year:
             raise ValueError("Рік має бути не пізніше поточного")
@@ -46,7 +44,7 @@ def fetch_movies():
 @app.post("/movies/", status_code=201)
 def create_movie(movie: MovieCreate):
     new_id = len(movies_db) + 1
-    film = Movie(id=new_id, **movie.dict())
+    film = Movie(id=new_id, **movie.model_dump())
     movies_db.append(film)
     return film
 
