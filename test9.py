@@ -1,13 +1,13 @@
 import base64
 
 import aiosqlite
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Query
 from fastapi.security import (
     HTTPBasic,
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
 )
-from pydantic import BaseModel, EmailStr, SecretStr
+from pydantic import BaseModel, EmailStr, Field, SecretStr
 
 # pip install python-multipart
 
@@ -57,9 +57,13 @@ app = FastAPI(on_startup=(create_tables,))
 class UserCreate(BaseModel):
     """Модель користувача для створення."""
 
-    name: str
-    email: EmailStr
-    password: SecretStr  # * * * * *
+    name: str = Field(
+        description="Name of the user", max_length=10, min_length=3, examples=["John Doe", "Alice Smith"]
+    )
+    email: EmailStr = Field(
+        description="Email of the user", examples=["ukr.vadya@gmail.com"]
+    )
+    password: SecretStr
 
 
 class UserShow(UserCreate):
@@ -72,11 +76,29 @@ class UserShow(UserCreate):
 class Token(BaseModel):
     """Модель токена доступу."""
 
-    token_type: str
-    access_token: str
+    token_type: str = Field(..., description="Type of the token", examples=["bearer"])
+    access_token: str = Field(
+        ...,
+        description="Token value",
+        examples=["Ym9iQGV4YW1wbGUuY29tLUJvYg=="],
+    )
 
 
-@app.post("/token", response_model=Token)
+@app.post(
+    "/token/",
+    response_model=Token,
+    tags=["auth"],
+    summary="Get access token by provided email and password",
+    description="Endpoint for auth purpose",
+    responses={
+        200: {"description": "Success"},
+        404: {"description": "User not found"},
+        400: {"description": "Incorrect password provided"},
+    },
+    operation_id="get-access-token",
+    include_in_schema=True,
+    name="get_token",
+)
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     connection: aiosqlite.Connection = Depends(get_db),
@@ -124,7 +146,9 @@ async def decode_token(token: str):
     return decoded_user_email
 
 
-@app.get("/users/me", response_model=UserShow)
+
+
+@app.get("/users/me/", response_model=UserShow)
 async def get_user_me(
     token: str = Depends(oauth2_scheme),
     connection: aiosqlite.Connection = Depends(get_db),
@@ -133,7 +157,6 @@ async def get_user_me(
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT * FROM users WHERE email = ?", (decoded_email,))
         db_user = await cursor.fetchone()
-				
 
         if db_user is None:
             raise HTTPException(
@@ -150,11 +173,20 @@ async def get_user_me(
     return decoded_user
 
 
-@app.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserShow)
+@app.post("/register/", 
+          status_code=status.HTTP_201_CREATED, 
+          response_model=UserShow,
+          tags=["users"],
+          summary="User registration",
+          description="Endpoint for user registration",
+          responses={
+              201: {"description": "User created successfully"},
+              400: {"description": "User already exists"},
+          },)
 async def user_registration(
     user_data: UserCreate, connection: aiosqlite.Connection = Depends(get_db)
 ) -> UserShow:
-    """Реєстрацію користувача в базі даних."""
+    """Реєстрація користувача в базі даних."""
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT 1 FROM users WHERE email = ?;", (user_data.email,))
         db_user = await cursor.fetchone()
@@ -181,3 +213,32 @@ async def user_registration(
         id=last_inserted["id"],
         is_active=True,
     )
+
+
+@app.get("/users/", 
+         status_code=status.HTTP_200_OK,
+         response_model=list[UserShow],
+         tags=["users"],
+         summary="Get list of users",
+         description="Endpoint to retrieve a list of users",
+         response_description="List of users",
+         operation_id="get_users",
+         include_in_schema=True,
+         name="get-users",
+         responses={
+             200: {"description": "List of users retrieved successfully"},
+             400: {"description": "Invalid request parameters"},
+         })
+async def get_users(
+    limit: int = Query(
+        default=10, description="Number of users to return", gt=0
+    ),
+    connection: aiosqlite.Connection = Depends(get_db),
+
+) -> list[UserShow]:
+    
+    async with connection.cursor() as cursor:
+        await cursor.execute("SELECT * FROM users LIMIT ?;", (limit,))
+        db_users = await cursor.fetchall()
+
+    return [UserShow(**data) for data in db_users]
