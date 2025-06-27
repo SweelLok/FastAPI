@@ -27,7 +27,7 @@ class Hobby(BaseModel):
 class User(BaseModel):
 		name: str = Field(..., description="Name of the person", examples=["John Doe", "Jane Smith"])
 		year: int = Field(..., description="Year of birth", examples=[1990, 1985])
-		hobbies: List[Hobby] = Field(..., description="List of hobbies of the person", examples=[{"name": "Reading"}, {"name": "Traveling"}])
+		hobbies: List[Hobby] = Field(..., description="List of hobbies of the person", examples=[[{"name": "Reading"}, {"name": "Traveling"}]])
 		password: SecretStr = Field(..., description="Password for the user", min_length=8, examples=["strongpassword123", "anotherpassword456"])
 
 @app.on_event("startup")
@@ -152,17 +152,18 @@ async def update_user(name: str, user: User):
         return user
 
 @app.delete("/users/{name}",
-		response_model=User,
+    response_model=User,
     tags=["Users"],
     summary="Delete a user",
     description="Deletes a user by name.",
     responses={200: {"description": "Deleted user successfully"}},
-    include_in_schema=True	
+    include_in_schema=True
 )
 async def delete_user(name: str):
     async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA foreign_keys = ON")
 
+        db.row_factory = aiosqlite.Row
         user_data = await db.execute("SELECT * FROM users WHERE name = ?", (name,))
         user = await user_data.fetchone()
         if not user:
