@@ -12,14 +12,14 @@ app = FastAPI(
 
 class Book(BaseModel):
     id: int
-    title: str = Field(..., examples={"title": {"summary": "Назва книги", "value": "Війна і мир"}})
-    author: str = Field(..., examples={"author": {"summary": "Автор книги", "value": "Лев Толстой"}})
-    year: int = Field(..., ge=0, le=2100, examples={"year": {"summary": "Рік видання", "value": 1869}})
+    title: str = Field(..., examples=["Війна і мир"])
+    author: str = Field(..., examples=["Лев Толстой"])
+    year: int = Field(..., ge=0, le=2100, examples=[1869])
 
 class User(BaseModel):
     id: int
-    name: str = Field(..., examples={"name": {"summary": "Ім'я користувача", "value": "Олександр"}})
-    email: str = Field(..., examples={"email": {"summary": "Електронна адреса", "value": "user@example.com"}})
+    name: str = Field(..., examples=["Олександр"])
+    email: str = Field(..., examples=["user@example.com"])
     
 # ======== Фейкові бази даних ========
 books_db: List[Book] = []
