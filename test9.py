@@ -9,7 +9,6 @@ from fastapi.security import (
 )
 from pydantic import BaseModel, EmailStr, Field, SecretStr
 
-# pip install python-multipart
 
 SQLITE_DB_NAME = "mydb.db"
 

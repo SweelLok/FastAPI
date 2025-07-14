@@ -1,4 +1,5 @@
 import aiomysql
+
 from fastapi import FastAPI, HTTPException
 
 
@@ -12,7 +13,6 @@ async def get_connection_pool():
         )
 
         return conn
-
 
 async def shutdown():
      pool = await get_connection_pool()
@@ -45,7 +45,6 @@ async def create_user(user_name: str, email: str):
             await connection.commit()
 
     return {"user_name": user_name}
-
 
 @app.get("/all_users/")
 async def get_all_users():

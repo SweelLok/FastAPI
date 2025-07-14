@@ -30,7 +30,6 @@ def create_user(user: User):
     db[user.email] = user
     return user
 
-
 @app.get("/users/", response_model=User)
 def get_user(email: EmailStr = Query(...)):
     user = db.get(email)

@@ -1,5 +1,6 @@
 import asyncio
 
+
 async def do_something_async():
     await asyncio.sleep(2)
     return "Асинхронне завдання завершено"

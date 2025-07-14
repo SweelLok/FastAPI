@@ -1,13 +1,9 @@
-import os
-import pathlib
-import time
 import asyncio
-import aiofiles
 import httpx
 import uvicorn
-import yagmail
 import random
 import pytest
+
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
@@ -43,12 +39,10 @@ async def process_task_queue():
         if task_queue.empty():
             print("All tasks have been completed")
         
-
 async def simulate_io_delay() -> None:
     async with httpx.AsyncClient() as client:
         response = await client.get("https://httpbin.org/delay/3", timeout=10)
         print(response.json())
-
 
 async def run_task(name: str, delay: int) -> None:
     print(f"Task {name}  with delay {delay} started")
@@ -56,12 +50,10 @@ async def run_task(name: str, delay: int) -> None:
     print(f"Task {name} completed in {delay} seconds")
     return {"success": f"Task {name} completed in {delay} seconds"}
 
-
 @app.post("/add-task/", status_code=status.HTTP_202_ACCEPTED)
 async def add_task(name: str):
       await task_queue.put(run_task(name, delay=random.randint(3, 10)))
       return {"message": f"Task {name} has been added to the queue"}
-
 
 @app.post("/register", status_code=status.HTTP_201_CREATED, response_model=User)
 async def user_registration(user_data: User, bg_tasks: BackgroundTasks) -> User:
@@ -74,7 +66,6 @@ async def user_registration(user_data: User, bg_tasks: BackgroundTasks) -> User:
     bg_tasks.add_task(simulate_io_delay)
     print([(task.func.__name__, task.kwargs, task.args) for task in bg_tasks.tasks])
     return User(**user_data.model_dump())
-
 
 @pytest.mark.asyncio
 async def test_add_task() -> None:

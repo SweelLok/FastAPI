@@ -1,12 +1,13 @@
-from fastapi import FastAPI, HTTPException, status, Depends
+import aiosqlite
+import base64
+
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field, SecretStr
 from typing import List
 from fastapi.security import (
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
 )
-import aiosqlite
-import base64
 
 
 app = FastAPI()
@@ -51,7 +52,6 @@ async def database():
             )
         """)
         await db.commit()
-
 
 @app.post(
     "/token",

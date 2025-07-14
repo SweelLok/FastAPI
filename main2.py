@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
 import aiohttp
 import aiomysql
 import os
 
+from fastapi import FastAPI, HTTPException
+
+
 app = FastAPI()
+
 
 URL = "https://jsonplaceholder.typicode.com/users"
 MYSQL_CONNECTION_DATA = {
@@ -18,14 +21,12 @@ MYSQL_CONNECTION_DATA = {
 async def get_connection():
     return await aiomysql.connect(**MYSQL_CONNECTION_DATA)
 
-
 @app.get("/api_users/")
 async def get_users_api():
     async with aiohttp.ClientSession() as session:
         async with session.get(URL) as response:
             data = await response.json()
             return data
-
 
 @app.get("/db_users/")
 async def get_users_db():
@@ -43,7 +44,6 @@ async def get_users_db():
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
     finally:
         conn.close()
-
 
 @app.post("/add_user/")
 async def add_user_to_db(user: str, email: str):
@@ -65,7 +65,6 @@ async def add_user_to_db(user: str, email: str):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
     finally:
         conn.close()
-
 
 @app.post("/delete_user/{user_id}/")
 async def delete_user(user_id: int):

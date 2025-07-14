@@ -1,4 +1,5 @@
 import aiosqlite
+
 from fastapi import FastAPI, Query, Request, Path, HTTPException
 
 
@@ -41,7 +42,6 @@ async def get_users(request: Request,
 
 	return users
 
-
 @app.get("/users/search")
 async def search_users(request: Request, 
 												name: str = Query(
@@ -64,7 +64,6 @@ async def search_users(request: Request,
 		users = await cursor.fetchall()
 	
 	return users
-
 
 @app.get("/users/{user_id}")
 async def get_user(request: Request, user_id: int = Path(gt=0, description="ID of the user")):

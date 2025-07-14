@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Query, HTTPException, Request
-from bs4 import BeautifulSoup
 import httpx
 import requests
+
+from fastapi import FastAPI, Query, HTTPException, Request
+from bs4 import BeautifulSoup
 
 
 app = FastAPI()
@@ -29,7 +30,6 @@ async def parse_page(url = Query(..., description="URL сторінки для �
     headers = get_all_headers()
 
     return {"headers": headers}
-
 
 @app.get("/get_links/")
 async def get_links(request : Request, site : str=Query(...)):

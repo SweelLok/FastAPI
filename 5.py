@@ -1,8 +1,11 @@
 import uvicorn
-from fastapi import FastAPI
 import asyncio
 
+from fastapi import FastAPI
+
+
 app = FastAPI()
+
 
 @app.get("/async-endpoint")
 async def read_items():

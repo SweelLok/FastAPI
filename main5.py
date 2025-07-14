@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
+
 
 app = FastAPI()
 
@@ -14,13 +15,19 @@ class Book(BaseModel):
     quantity: Optional[int] = None
 
 
+class Event(BaseModel):
+    id: int
+    title: str
+    date: datetime
+    location: str
+
+
 books_db = []
 
 
 @app.get("/books/")
 def list_books():
     return books_db
-
 
 @app.post("/books/", status_code=201)
 def create_book(book: Book):
@@ -29,7 +36,6 @@ def create_book(book: Book):
             raise HTTPException(status_code=400, detail="ID книги вже існує")
     books_db.append(book)
     return book
-
 
 @app.get("/books/{book_id}")
 def retrieve_book(book_id: int):
@@ -76,6 +82,8 @@ class User(BaseModel):
 
 
 users_db = []
+events_db = []
+rsvp_db = {}
 
 
 @app.post("/register", status_code=201)
@@ -86,18 +94,6 @@ def register(user: User):
     users_db.append(user)
     return user
 
-
-class Event(BaseModel):
-    id: int
-    title: str
-    date: datetime
-    location: str
-
-
-events_db = []
-rsvp_db = {}
-
-
 @app.post("/events/", status_code=201)
 def add_event(event: Event):
     if event.date <= datetime.now():
@@ -105,11 +101,9 @@ def add_event(event: Event):
     events_db.append(event)
     return event
 
-
 @app.get("/events/")
 def all_events():
     return events_db
-
 
 @app.get("/events/{event_id}")
 def event_detail(event_id: int):
@@ -117,7 +111,6 @@ def event_detail(event_id: int):
         if ev.id == event_id:
             return ev
     raise HTTPException(status_code=404, detail="Подію не знайдено")
-
 
 @app.put("/events/{event_id}")
 def modify_event(event_id: int, data: Event):
@@ -129,7 +122,6 @@ def modify_event(event_id: int, data: Event):
             return data
     raise HTTPException(status_code=404, detail="Не знайдено")
 
-
 @app.delete("/events/{event_id}")
 def remove_event(event_id: int):
     for i, ev in enumerate(events_db):
@@ -137,7 +129,6 @@ def remove_event(event_id: int):
             events_db.pop(i)
             return {"message": "Подію видалено"}
     raise HTTPException(status_code=404, detail="Не знайдено")
-
 
 @app.patch("/events/{event_id}/reschedule")
 def change_event_date(event_id: int, new_date: datetime):
@@ -148,7 +139,6 @@ def change_event_date(event_id: int, new_date: datetime):
             ev.date = new_date
             return ev
     raise HTTPException(status_code=404, detail="Подія не знайдена")
-
 
 @app.post("/events/{event_id}/rsvp", status_code=201)
 def rsvp(event_id: int, email: EmailStr):

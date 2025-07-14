@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 from datetime import datetime
+
 
 app = FastAPI()
 
 movies_db = []
+
 
 class Movie(BaseModel):
     id: int
@@ -40,7 +41,6 @@ class MovieCreate(BaseModel):
 def fetch_movies():
     return movies_db
 
-
 @app.post("/movies/", status_code=201)
 def create_movie(movie: MovieCreate):
     new_id = len(movies_db) + 1
@@ -48,14 +48,12 @@ def create_movie(movie: MovieCreate):
     movies_db.append(film)
     return film
 
-
 @app.get("/movies/{movie_id}")
 def fetch_movie(movie_id: int):
     for m in movies_db:
         if m.id == movie_id:
             return m
     raise HTTPException(status_code=404, detail="Фільм не знайдено")
-
 
 @app.delete("/movies/{movie_id}")
 def remove_movie(movie_id: int):

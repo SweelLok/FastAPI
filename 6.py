@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 
+
 app = FastAPI()
 
 names = []
+
 
 @app.post("/add-name/{name}")
 async def add_name(name: str):

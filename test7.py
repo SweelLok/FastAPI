@@ -1,5 +1,6 @@
 import json
 import uvicorn
+
 from fastapi import FastAPI, Header, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 
@@ -17,7 +18,6 @@ async def check_headers(
 		raise HTTPException(status_code=400, detail="X-Token header invalid")
 	
 	return {"user_agent": user_agent, "x_token": x_token}
-
 
 @app.get("/check_auth/")
 async def check_auth(

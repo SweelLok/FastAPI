@@ -1,7 +1,8 @@
-from fastapi import FastAPI
 import uvicorn
 import aiomysql
 import os
+
+from fastapi import FastAPI
 
 
 MYSQL_CONNECTION_DATA = {
@@ -52,7 +53,6 @@ async def get_todo():
 
 	return result
 
-
 @app.get("/todo/{todo_id}")
 async def get_todo_by_id(todo_id: int):
 	conn = await get_db_connection()
@@ -68,7 +68,6 @@ async def get_todo_by_id(todo_id: int):
 		conn.close()
 
 	return result
-
 
 @app.post("/add_todo/")
 async def add_todo(name: str, description: str):
@@ -86,7 +85,6 @@ async def add_todo(name: str, description: str):
 		conn.close()
 
 	return {"message": "Todo added successfully"}
-
 
 @app.put("/update_todo/{todo_id}")
 async def update_todo(todo_id: int, name: str, description: str):
@@ -110,7 +108,6 @@ async def update_todo(todo_id: int, name: str, description: str):
 		conn.close()
 
 	return {"message": "Todo updated successfully"}
-
 
 @app.delete("/delete_todo/{todo_id}")
 async def delete_todo(todo_id: int):

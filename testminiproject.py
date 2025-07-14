@@ -8,4 +8,3 @@ def test_parse_page():
     
     assert response.status_code == 200
     assert "headers" in response.json()
-  

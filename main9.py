@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import List
 
@@ -40,7 +40,6 @@ async def get_books():
     """Повертає список усіх книг."""
     return books_db
 
-
 @app.post(
     "/books/",
     response_model=Book,
@@ -58,7 +57,6 @@ async def create_book(book: Book):
     books_db.append(book)
     return book
 
-
 @app.get(
     "/users/",
     response_model=List[User],
@@ -71,7 +69,6 @@ async def create_book(book: Book):
 async def get_users():
     """Повертає список користувачів."""
     return users_db
-
 
 @app.post(
     "/users/",

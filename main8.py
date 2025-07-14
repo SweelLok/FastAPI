@@ -1,25 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.responses import JSONResponse
-from typing import Optional
-from pydantic import BaseModel
 
 
 app = FastAPI()
 
 security = HTTPBasic()
-
-
-@app.get("/basic-auth/")
-def basic_auth(credentials: HTTPBasicCredentials = Depends(security)):
-    correct_username = "admin"
-    correct_password = "1234"
-
-    if credentials.username != correct_username or credentials.password != correct_password:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    return {"message": f"Hello, {credentials.username}!"}
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -32,6 +17,16 @@ fake_users = {
 }
 
 
+@app.get("/basic-auth/")
+def basic_auth(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = "admin"
+    correct_password = "1234"
+
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {"message": f"Hello, {credentials.username}!"}
+
 @app.post("/token/")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = fake_users.get(form_data.username)
@@ -41,7 +36,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect username or password",
         )
     return {"access_token": user["token"], "token_type": "bearer"}
-
 
 @app.get("/protected-oauth2/")
 def protected_route(token: str = Depends(oauth2_scheme)):

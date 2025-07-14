@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException
 import uvicorn
+
+from fastapi import FastAPI, HTTPException
+
 
 app = FastAPI()
 
@@ -13,11 +15,9 @@ async def add_name(name: str):
     names.append(name)
     return {"message": "Ім'я було успішно додано"}
 
-
 @app.get("/get-names/")
 async def get_names():
     return {"names": names}
-
 
 @app.post("/delete-name/{name}")
 async def delete_name(name: str):

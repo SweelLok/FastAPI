@@ -1,5 +1,6 @@
 import asyncio
 
+
 async def simple_delay():
     print("Початок задачі")
     await asyncio.sleep(2)

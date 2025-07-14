@@ -1,5 +1,6 @@
 import time
 
+
 def do_something():
     time.sleep(2)
     return "Завдання завершено"

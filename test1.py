@@ -1,4 +1,3 @@
-import aiohttp
 from aiohttp import web
 
 
@@ -20,7 +19,6 @@ async def handle_get(request: web.Request) -> web.Response:
 			)
 		
 		return web.json_response({"message": f"User, {name} exists!"})
-
 
 async def handle_post(request: web.Request) -> web.Response:
 		# * Get the user name and email from the URL path

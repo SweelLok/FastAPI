@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from datetime import datetime
@@ -26,16 +26,13 @@ class CustomMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(CustomMiddleware)
 
-
 @app.get("/hello/")
 async def say_hello():
     return {"message": "Hello world!"}
 
-
 @app.get("/ping/")
 async def ping():
     return {"message": "Pong!"}
-
 
 @app.post("/echo/")
 async def echo(data: dict):

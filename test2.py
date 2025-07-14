@@ -1,5 +1,6 @@
 import aiomysql
 import os
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -22,7 +23,6 @@ MYSQL_CONNECTION_DATA = {
 async def get_mysql_connection() -> aiomysql.Connection:
     """Створення та повернення з'єднання."""
     return await aiomysql.connect(**MYSQL_CONNECTION_DATA)
-
 
 @asynccontextmanager
 async def create_tables(_: FastAPI):
@@ -116,7 +116,6 @@ async def create_book(book: Book) -> BookInfo:
 
     return BookInfo(**book.model_dump(), id=user_id[0])
 
-
 @app.get("/books/")
 async def get_books(limit: int=Query(default=100, description="Books count"),) -> list[BookInfo]:
     connection = await get_mysql_connection()
@@ -134,7 +133,6 @@ async def get_books(limit: int=Query(default=100, description="Books count"),) -
 
     return [BookInfo(**book) for book in books]
 
-
 @app.get("/books/{book_id}/")
 async def get_books(book_id: int) -> BookInfo:
     connection = await get_mysql_connection()
@@ -151,7 +149,6 @@ async def get_books(book_id: int) -> BookInfo:
         await connection.ensure_closed()
 
     return BookInfo(**book)
-
 
 @app.put("/books/{book_id}/")
 async def update_book(book_id: int, book: BookUpdate) -> BookInfo:
@@ -179,8 +176,6 @@ async def update_book(book_id: int, book: BookUpdate) -> BookInfo:
         await connection.ensure_closed()
 
     return BookInfo(**book.model_dump(), id=book_id)
-
-
 
 @app.delete("/books/{book_id}/")
 async def delete_book(book_id: int) -> JSONResponse:
