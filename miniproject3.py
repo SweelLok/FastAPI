@@ -172,7 +172,20 @@ def ad_row_to_dict(row) -> dict:
         "category": row[4],
     }
 
-@app.get("/filters/", response_model=List[Ad])
+@app.get(
+    "/filters/",
+    response_model=List[Ad],
+    summary="Список оголошень з фільтрами",
+    description=(
+        "Повертає список оголошень з можливістю фільтрації за категорією, "
+        "мінімальною та максимальною ціною з підтримкою пагінації."
+    ),
+    tags=["Оголошення"],
+    responses={
+        200: {"description": "Успішне повернення списку оголошень"},
+        400: {"description": "Невірні параметри запиту"},
+    }
+)
 def list_ads(
     category: Optional[str] = None,
     min_price: Optional[float] = None,
@@ -208,7 +221,18 @@ def list_ads(
 		
 	return [ad_row_to_dict(row) for row in rows]
 
-@app.post("/create/")
+@app.post(
+    "/create/",
+    summary="Створення оголошення",
+    description="Створює нове оголошення з завантаженням зображення. Потрібна аутентифікація через токен.",
+    tags=["Оголошення"],
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: {"description": "Оголошення успішно створено"},
+        400: {"description": "Некоректне зображення або дані"},
+        401: {"description": "Неавторизований доступ"},
+    }
+)
 async def create_ad(
     title: str = Form(...),
     description: str = Form(...),
@@ -247,7 +271,13 @@ async def create_ad(
         "image_path": file_path,
     }
 
-@app.get("/chat/")
+@app.get(
+    "/chat/",
+    summary="Сторінка WebSocket чату",
+    description="Повертає HTML-сторінку з WebSocket чатом.",
+    tags=["Чат"],
+    status_code=status.HTTP_200_OK,
+)
 async def get_chat():
     return HTMLResponse(html)
 
@@ -275,7 +305,13 @@ def ensure_room_exists(room_name: str):
 
 connections = {}
 
-@app.websocket("/ws/{room}")
+@app.websocket(
+    "/ws/{room}",
+    summary="WebSocket чат",
+    description="WebSocket для обміну повідомленнями в межах конкретної кімнати.",
+    tags=["Чат"],
+    
+)
 async def websocket_endpoint(websocket: WebSocket, room: str):
     await websocket.accept()
 
@@ -331,7 +367,17 @@ def init_db():
 
 init_db()
 
-@app.post("/register/", status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/register/",
+    status_code=status.HTTP_201_CREATED,
+    summary="Реєстрація користувача",
+    description="Реєстрація нового користувача з хешуванням паролю.",
+    tags=["Аутентифікація"],
+    responses={
+        201: {"description": "Користувача успішно зареєстровано"},
+        400: {"description": "Email вже зареєстрований або некоректні дані"},
+    }
+)
 async def register_user(user: User):
     with sqlite3.connect(DB_NAME) as connection:
         cursor: sqlite3.Cursor = connection.cursor()
@@ -379,10 +425,28 @@ async def login(
         token_type="bearer",
     )
 
-@app.post("/token", response_model=Token,)
+@app.post(
+    "/token",
+    response_model=Token,
+    summary="Отримання токену доступу",
+    description="Отримання JWT токену за email та паролем (логін).",
+    tags=["Аутентифікація"],
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "Токен отримано успішно"},
+        400: {"description": "Неправильний пароль"},
+        404: {"description": "Користувача не знайдено"},
+    }
+)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return await login(form_data)
 
-@app.get("/test/")
+@app.get(
+    "/test/",
+    summary="Тестовий ендпоінт",
+    description="Тестовий ендпоінт, який вимагає передачі токена авторизації.",
+    tags=["Тести"],
+    status_code=status.HTTP_200_OK,
+)
 async def test(token: str = Depends(oauth2_scheme)):
     return "hello"

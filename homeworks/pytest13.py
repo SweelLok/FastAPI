@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from homework13 import app, SECRET_KEY, ALGORITHM
+from main13 import app, SECRET_KEY, ALGORITHM
 import jwt
 import websockets
 
