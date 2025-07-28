@@ -306,11 +306,7 @@ def ensure_room_exists(room_name: str):
 connections = {}
 
 @app.websocket(
-    "/ws/{room}",
-    summary="WebSocket чат",
-    description="WebSocket для обміну повідомленнями в межах конкретної кімнати.",
-    tags=["Чат"],
-    
+    "/ws/{room}"
 )
 async def websocket_endpoint(websocket: WebSocket, room: str):
     await websocket.accept()
