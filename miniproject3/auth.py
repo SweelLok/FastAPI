@@ -5,7 +5,7 @@ import sqlite3
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
-from miniproject3.config import app, DB_NAME, oauth2_scheme
+from .config import DB_NAME, oauth2_scheme
 from fastapi import APIRouter
 
 router = APIRouter()

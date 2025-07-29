@@ -1,5 +1,5 @@
 import os
-import sqlite3
+import sqlite3 
 
 from fastapi import (
 	FastAPI, Query, HTTPException, UploadFile, Form, 
@@ -13,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-from miniproject3.auth import router as auth_router
+from .auth import router as auth_router
 
 
 def init_db():
