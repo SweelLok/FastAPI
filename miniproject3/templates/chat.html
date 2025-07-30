@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>WebSocket Chat</title>
 </head>
+
 <body>
     <h1>WebSocket Chat</h1>
     <h1><a href='https://bytecraft.com.ua'>Bytecraft</a></h1>
@@ -17,56 +19,59 @@
 
     <ul id="messages"></ul>
 
-    <img src="https://res2.weblium.site/res/683deb0bde7b8dfb78b055e5/6873aab3ccd53279455bfb44_optimized_953_c953x953-0x0.webp" alt="Фото" width="200"/>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiHPN_CyosGu2C0kDyVFwyrQoFuQBiFMn9gQ&s" alt="Фото" width="200"/>
+    <img src="https://res2.weblium.site/res/683deb0bde7b8dfb78b055e5/6873aab3ccd53279455bfb44_optimized_953_c953x953-0x0.webp"
+        alt="Фото" width="200" />
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiHPN_CyosGu2C0kDyVFwyrQoFuQBiFMn9gQ&s" alt="Фото"
+        width="200" />
 
-<script>
-    let ws = null;
-    let connected = false;
+    <script>
+        let ws = null;
+        let connected = false;
 
-    function connect() {
-        if (connected) {
-            appendSystem("Уже підключено.");
-            return;
+        function connect() {
+            if (connected) {
+                appendSystem("Уже підключено.");
+                return;
+            }
+
+            const room = document.getElementById("roomInput").value;
+            ws = new WebSocket(`ws://127.0.0.1:8000/ws/${room}`);
+
+            ws.onopen = () => {
+                connected = true;
+                appendSystem("Підключено до " + room);
+            };
+
+            ws.onmessage = (e) => appendMessage(e.data);
+
+            ws.onclose = () => {
+                connected = false;
+                appendSystem("Відключено");
+            };
         }
 
-        const room = document.getElementById("roomInput").value;
-        ws = new WebSocket(`ws://127.0.0.1:8000/ws/${room}`);
-
-        ws.onopen = () => {
-            connected = true;
-            appendSystem("Підключено до " + room);
-        };
-
-        ws.onmessage = (e) => appendMessage(e.data);
-
-        ws.onclose = () => {
-            connected = false;
-            appendSystem("Відключено");
-        };
-    }
-
-    function sendMessage(e) {
-        e.preventDefault();
-        const input = document.getElementById("messageText");
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(input.value);
-            input.value = '';
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById("messageText");
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(input.value);
+                input.value = '';
+            }
         }
-    }
 
-    function appendMessage(text) {
-        const li = document.createElement('li');
-        li.textContent = text;
-        document.getElementById("messages").appendChild(li);
-    }
+        function appendMessage(text) {
+            const li = document.createElement('li');
+            li.textContent = text;
+            document.getElementById("messages").appendChild(li);
+        }
 
-    function appendSystem(text) {
-        const li = document.createElement('li');
-        li.style.color = "gray";
-        li.textContent = text;
-        document.getElementById("messages").appendChild(li);
-    }
-</script>
+        function appendSystem(text) {
+            const li = document.createElement('li');
+            li.style.color = "gray";
+            li.textContent = text;
+            document.getElementById("messages").appendChild(li);
+        }
+    </script>
 </body>
+
 </html>
