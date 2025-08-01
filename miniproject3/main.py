@@ -2,10 +2,9 @@ import os
 import sqlite3 
 
 from fastapi import (
-	FastAPI, Query, HTTPException, UploadFile, Form, 
+	Query, HTTPException, UploadFile, Form, 
     File, WebSocket, WebSocketDisconnect, status, Depends, Request
 )
-from fastapi.responses import HTMLResponse
 from fastapi.security import (
     OAuth2PasswordBearer,
 )
@@ -14,35 +13,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from .auth import router as auth_router
+from .config import app
 
 
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.executescript("""
-        CREATE TABLE IF NOT EXISTS ads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            price REAL NOT NULL,
-            category TEXT NOT NULL,
-            image_path TEXT NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS rooms (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL
-        );
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR(30) NOT NULL,
-            email VARCHAR(32) UNIQUE NOT NULL,
-            password VARCHAR(30) NOT NULL
-        );
-    """)
-    conn.commit()
-    conn.close()
-
-app = FastAPI(on_startup=[init_db])
 app.include_router(auth_router)
 DB_NAME = "ads.db"
 UPLOAD_DIR = "uploads"
