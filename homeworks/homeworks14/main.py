@@ -1,7 +1,10 @@
 import sqlite3
 
-from fastapi import WebSocket, WebSocketDisconnect, Request, status
+from fastapi import WebSocket, WebSocketDisconnect, Request, status, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
 from .config import app, templates, DB_NAME
+from .auth import authenticate_user, create_access_token, get_current_user
 
 
 @app.get(
@@ -48,3 +51,22 @@ async def websocket_endpoint(websocket: WebSocket, room: str):
         connections[room].remove(websocket)
         if not connections[room]:
             del connections[room]
+
+@app.post("/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/protected")
+async def protected_route(current_user: dict = Depends(get_current_user)):
+    return {"message": f"Hello, {current_user['username']}! This is a protected route."}
